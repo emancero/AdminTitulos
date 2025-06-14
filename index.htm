@@ -1,0 +1,19 @@
+<form id="editarTitulo">
+	<input type="text" id="emisor" value="Corporación Favorita" />
+	<select id="tipoValor">
+		<option value="1">Acciones</option>
+		<option value="17">Valor de participación</option>
+	</select>
+	<input type="submit" />
+</form>
+<script>
+	const form = document.getElementById('editarTitulo');
+	const emisor = document.getElementById('emisor');
+	const tipoValor = document.getElementById('tipoValor');
+	form.addEventListener('submit', function(event) {
+		event.preventDefault();
+		const emisores = JSON.parse(localStorage.getItem("emisores")) || {};
+		emisores[emisor.value] = tipoValor.value;
+		localStorage.setItem("emisores",JSON.stringify(emisores));
+	});
+</script>
