@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Administración de Títulos Valores</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    input, select, button { margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Administración de Títulos Valores</h1>
+  <form id="formulario">
+    <input type="text" id="emisor" placeholder="Emisor" required />
+    <select id="tipoValor" required>
+      <option value="">Seleccione tipo de valor</option>
+      <option value="1">Acciones</option>
+      <option value="17">Valores de participación</option>
+    </select>
+    <input type="number" id="monto" placeholder="Monto autorizado" min="1" required />
+    <button type="submit">Guardar</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Emisor</th>
+        <th>Tipo de Valor</th>
+        <th>Monto Autorizado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+  </table>
+
+  <script>
+    const form = document.getElementById('formulario');
+    const tabla = document.getElementById('tabla');
+    const emisorInput = document.getElementById('emisor');
+    const tipoValorInput = document.getElementById('tipoValor');
+    const montoInput = document.getElementById('monto');
+
+    function obtenerDatos() {
+      return JSON.parse(localStorage.getItem('titulosValores')) || {};
+    }
+
+    function guardarDatos(datos) {
+      localStorage.setItem('titulosValores', JSON.stringify(datos));
+    }
+
+    function renderizarTabla() {
+      const datos = obtenerDatos();
+      tabla.innerHTML = '';
+      for (const [emisor, { tipoValor, monto }] of Object.entries(datos)) {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td>${emisor}</td>
+          <td>${tipoValor == 1 ? 'Acciones' : 'Valores de participación'}</td>
+          <td>${monto}</td>
+          <td>
+            <button onclick="editar('${emisor}')">Editar</button>
+            <button onclick="eliminar('${emisor}')">Eliminar</button>
+          </td>
+        `;
+        tabla.appendChild(fila);
+      }
+    }
+
+    function editar(emisor) {
+      const datos = obtenerDatos();
+      const registro = datos[emisor];
+      emisorInput.value = emisor;
+      emisorInput.disabled = true;
+      tipoValorInput.value = registro.tipoValor;
+      montoInput.value = registro.monto;
+    }
+
+    function eliminar(emisor) {
+      const datos = obtenerDatos();
+      delete datos[emisor];
+      guardarDatos(datos);
+      renderizarTabla();
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const emisor = emisorInput.value.trim();
+      const tipoValor = parseInt(tipoValorInput.value);
+      const monto = parseFloat(montoInput.value);
+
+      if (!emisor || !tipoValor || monto <= 0) {
+        alert('Todos los campos son obligatorios y el monto debe ser mayor a cero.');
+        return;
+      }
+
+      const datos = obtenerDatos();
+      datos[emisor] = { tipoValor, monto };
+      guardarDatos(datos);
+
+      emisorInput.disabled = false;
+      form.reset();
+      renderizarTabla();
+    });
+
+    renderizarTabla();
+  </script>
+</body>
+</html>
